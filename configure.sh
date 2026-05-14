@@ -24,6 +24,7 @@ Configures the CMAKE build environment.
 --yices2-home=STR       custom YICES2 location  (default: deps/yices2)
 --build-dir=STR         custom build directory  (default: build)
 --debug                 build debug with debug symbols (default: off)
+--asan                  build with AddressSanitizer instrumentation (default: off)
 --static                create static libaries (default: off)
 --without-tests         build without the smt-switch test suite (default: off)
 --no-system-gtest       do not use system GTest sources; forces download (default: off)
@@ -59,6 +60,7 @@ cvc5_home=default
 msat_home=default
 yices2_home=default
 static=default
+asan=default
 build_tests=default
 system_gtest=default
 python=default
@@ -157,6 +159,9 @@ do
             ;;
         --debug)
             build_type=Debug;
+            ;;
+        --asan)
+            asan=yes
             ;;
         --static)
             static=yes
@@ -272,6 +277,9 @@ cmake_opts="$cmake_opts -DCMAKE_BUILD_TYPE=$build_type"
 
 [ $static != default ] \
     && cmake_opts="$cmake_opts -DSMT_SWITCH_LIB_TYPE=STATIC"
+
+[ $asan != default ] \
+    && cmake_opts="$cmake_opts -DSMT_SWITCH_ENABLE_ASAN=ON"
 
 [ $build_tests != default ] \
     && cmake_opts="$cmake_opts -DBUILD_TESTS=$build_tests"
