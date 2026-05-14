@@ -176,7 +176,8 @@ void GenericDatatype::change_sort_of_selector(const Sort new_sort)
         std::static_pointer_cast<GenericDatatypeConstructorDecl>(
             cons_decl_vector[i]);
     // For every selector
-    for (unsigned int f = 0; f < get_num_selectors(cons_cast->get_name()); ++f)
+    int num_selectors = get_num_selectors(cons_cast->get_name());
+    for (int f = 0; f < num_selectors; ++f)
     {
       if (cons_cast->selector_vector[f].finalized == false)
       {

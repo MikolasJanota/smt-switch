@@ -16,7 +16,6 @@
 
 #include "exec_utils.h"
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <array>
@@ -84,7 +83,8 @@ void dump_and_run(const std::string & executable_path,
   while (std::getline(result, line))
   {
     auto expected_result = expected_results.at(line_index++);
-    EXPECT_THAT(expected_result, testing::Contains(line));
+    EXPECT_TRUE(expected_result.find(line) != expected_result.end())
+        << "Unexpected output line: " << line;
   }
   EXPECT_EQ(line_index, expected_results.size());
   if (!testing::Test::HasFailure())

@@ -392,10 +392,9 @@ class TseitinTraversal : public IdentityWalker
         for (auto u : term)
         {
           Term cached_term;
-          bool present = query_cache(u,
-                                     cached_term);  // finding the new name of
-                                                    // each child from the cache
-          assert(present == true);
+          // finding the new name of each child from the cache
+          [[maybe_unused]] bool present = query_cache(u, cached_term);
+          assert(present);
           vec.push_back(cached_term);
         }
 

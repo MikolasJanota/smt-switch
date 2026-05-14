@@ -1,5 +1,6 @@
 macro(switch_add_cvc5_legacy_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/cvc5/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_link_libraries(${name} smt-switch-cvc5)
   target_link_libraries(${name} exec-utils)
   add_test(NAME ${name} COMMAND ${name})

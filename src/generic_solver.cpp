@@ -23,6 +23,7 @@
 
 #include "generic_solver.h"
 
+#include <cerrno>
 #include <signal.h>
 #include <sys/prctl.h>
 #include <sys/wait.h>
@@ -111,12 +112,12 @@ GenericSolver::GenericSolver(std::string path,
   assert(write_buf != NULL);
   assert(read_buf != NULL);
   // initialize write_buf
-  for (int i = 0; i < write_buf_size; i++)
+  for (unsigned int i = 0; i < write_buf_size; i++)
   {
     write_buf[i] = 0;
   }
   // initialize read_buf
-  for (int i = 0; i < read_buf_size; i++)
+  for (unsigned int i = 0; i < read_buf_size; i++)
   {
     read_buf[i] = 0;
   }
@@ -149,8 +150,18 @@ void GenericSolver::start_solver()
 {
   pid = 0;
 
-  pipe(inpipefd);
-  pipe(outpipefd);
+  if (pipe(inpipefd) != 0)
+  {
+    std::string msg("failure to create input pipe: ");
+    msg += strerror(errno);
+    throw IncorrectUsageException(msg);
+  }
+  if (pipe(outpipefd) != 0)
+  {
+    std::string msg("failure to create output pipe: ");
+    msg += strerror(errno);
+    throw IncorrectUsageException(msg);
+  }
   pid = fork();
   if (pid == 0)
   {
@@ -170,7 +181,7 @@ void GenericSolver::start_solver()
     // path.
     const char ** argv = new const char *[cmd_line_args.size() + 2];
     argv[0] = path.c_str();
-    for (int i = 1; i <= cmd_line_args.size(); i++)
+    for (std::size_t i = 1; i <= cmd_line_args.size(); i++)
     {
       argv[i] = cmd_line_args[i - 1].c_str();
     }
@@ -193,14 +204,14 @@ void GenericSolver::start_solver()
 void GenericSolver::write_internal(std::string str) const
 {
   // track how many charas were written so far
-  unsigned int written_chars = 0;
+  std::size_t written_chars = 0;
   // continue writing  until entire str was written
   while (written_chars < str.size())
   {
     // how many characters are there left to write
-    unsigned int remaining = str.size() - written_chars;
+    std::size_t remaining = str.size() - written_chars;
     // how many characters are we writing in this iteration
-    unsigned int substr_size;
+    std::size_t substr_size;
     if (remaining < write_buf_size)
     {
       substr_size = remaining;
@@ -210,9 +221,19 @@ void GenericSolver::write_internal(std::string str) const
       substr_size = write_buf_size - 1;
     }
     // write
-    strcpy(write_buf, str.substr(written_chars, substr_size).c_str());
-    write(outpipefd[1], write_buf, substr_size);
-    written_chars += substr_size;
+    ssize_t num_written =
+        write(outpipefd[1], str.data() + written_chars, substr_size);
+    if (num_written < 0)
+    {
+      std::string msg("failure to write to solver pipe: ");
+      msg += strerror(errno);
+      throw IncorrectUsageException(msg);
+    }
+    if (num_written == 0)
+    {
+      throw IncorrectUsageException("failure to write to solver pipe.");
+    }
+    written_chars += static_cast<std::size_t>(num_written);
   }
 }
 
@@ -229,7 +250,7 @@ bool GenericSolver::is_done(int just_read, std::string result) const
   {
     // if the output of the solver starts with '('
     // we will be done only when we see the matching ')'
-    for (int i = 0; i < result.size(); i++)
+    for (std::size_t i = 0; i < result.size(); i++)
     {
       if (result[i] == '(')
       {
@@ -246,7 +267,8 @@ bool GenericSolver::is_done(int just_read, std::string result) const
   {
     // if the output of the solver does not start with '('
     // we will be done when we reach a newline character
-    assert(just_read <= read_buf_size);
+    assert(just_read >= 0
+           && static_cast<unsigned int>(just_read) <= read_buf_size);
     for (int i = 0; i < just_read; i++)
     {
       if (is_new_line(read_buf[i]))
@@ -274,7 +296,7 @@ std::string GenericSolver::read_internal() const
     result = result.append(read_buf_str);
     done = is_done(just_read, result);
     // clear buffer
-    for (int i = 0; i < read_buf_size; i++)
+    for (unsigned int i = 0; i < read_buf_size; i++)
     {
       read_buf[i] = 0;
     }
@@ -1045,7 +1067,7 @@ Term GenericSolver::make_term(const Op op, const TermVec & terms) const
 {
   Sort sort = compute_sort(op, this, terms);
   std::string repr = "(" + op.to_string();
-  for (int i = 0; i < terms.size(); i++)
+  for (std::size_t i = 0; i < terms.size(); i++)
   {
     assert((*term_name_map).find(terms[i]) != (*term_name_map).end());
     repr += " " + (*term_name_map)[terms[i]];
@@ -1146,7 +1168,8 @@ std::string GenericSolver::strip_value_from_result(std::string result) const
   // special case for bit-vectors with smt-lib style
   // (_ bv<value> <bitwidth>)
   // in this case we only take <value>
-  if (result.find("bv", start_of_value) == start_of_value)
+  if (result.find("bv", static_cast<std::size_t>(start_of_value))
+      == static_cast<std::size_t>(start_of_value))
   {
     start_of_value -= 3;
     end_of_value++;
@@ -1199,7 +1222,7 @@ UnorderedTermSet GenericSolver::get_assumptions_from_string(
   strip = trim(strip);
 
   // position in the string
-  int index = 0;
+  std::size_t index = 0;
   // if true, current literal is positive.
   // otherwise, it has the form (not <var>)
   bool positive;
@@ -1208,15 +1231,16 @@ UnorderedTermSet GenericSolver::get_assumptions_from_string(
   while (index < strip.size())
   {
     // beginning and end of literal
-    int begin;
-    int end;
+    std::size_t begin;
+    std::size_t end;
 
     // negative literal
     if (strip.substr(index, 5) == "(not ")
     {
       begin = index + 5;
-      end = strip.find(")", begin + 1) - 1;
-      assert(end != std::string::npos);
+      std::size_t close = strip.find(")", begin + 1);
+      assert(close != std::string::npos);
+      end = close - 1;
       positive = false;
     }
     else

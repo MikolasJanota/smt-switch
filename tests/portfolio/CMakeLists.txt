@@ -1,5 +1,6 @@
 macro(switch_add_portfolio_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/portfolio/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_link_libraries(${name} smt-switch-btor)
   target_link_libraries(${name} smt-switch-cvc5)
   target_link_libraries(${name} smt-switch-msat)

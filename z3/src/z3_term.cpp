@@ -103,13 +103,18 @@ std::size_t Z3Term::get_id() const
 bool Z3Term::compare(const Term & absterm) const
 {
   std::shared_ptr<Z3Term> zs = std::static_pointer_cast<Z3Term>(absterm);
+  if (ctx != zs->ctx)
+  {
+    return false;
+  }
+
   if (is_function && zs->is_function)
   {
-    return z_func.hash() == (zs->z_func).hash();
+    return Z3_is_eq_func_decl(*ctx, z_func, zs->z_func);
   }
   else if (!is_function && !zs->is_function)
   {
-    return term.hash() == (zs->term).hash();
+    return Z3_is_eq_ast(*ctx, term, zs->term);
   }
   return false;
 }
@@ -252,7 +257,7 @@ Sort Z3Term::get_sort() const
   }
 
   z3::sort_vector domain(*ctx);
-  for (int i = 0; i < z_func.arity(); i++)
+  for (unsigned int i = 0; i < z_func.arity(); i++)
   {
     domain.push_back(z_func.domain(i));
   }

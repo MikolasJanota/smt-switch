@@ -37,7 +37,7 @@ void test_bad_cmd(SmtSolver gs)
   {
     gs->set_opt("iiiaaaaiiiiaaaa", "aaa");
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught the exception" << endl;
   }
@@ -52,7 +52,7 @@ void test_uf_1(SmtSolver gs)
   {
     Sort s1 = gs->make_sort("S", 1);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught the exception" << endl;
   }
@@ -142,7 +142,7 @@ void test_int_1(SmtSolver gs)
   {
     Sort err_sort = gs->make_sort(ARRAY);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught the exception" << endl;
   }
@@ -164,7 +164,7 @@ void test_bv_1(SmtSolver gs)
   {
     Sort err_sort = gs->make_sort(INT, bv_sort);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught the exception" << endl;
   }
@@ -177,7 +177,7 @@ void test_bv_2(SmtSolver gs)
   {
     Sort err_sort = gs->make_sort(INT, 4);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught the exception" << endl;
   }
@@ -191,7 +191,7 @@ void test_uf_2(SmtSolver gs)
   {
     Term svar2 = gs->make_symbol("x_s1", s);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught exception" << endl;
   }
@@ -240,7 +240,7 @@ void test_bad_term_1(SmtSolver gs)
     Term bv_one_equal_int_one =
         gs->make_term(Equal, TermVec({ bv_one, int_one }));
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught expected exception " << endl;
   }
@@ -261,7 +261,7 @@ void test_bad_term_2(SmtSolver gs)
     Term bv_one_plus_int_one =
         gs->make_term(Equal, TermVec({ bv_one, int_one }));
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     cout << "caught expected exception " << endl;
   }
@@ -895,7 +895,7 @@ int main()
     path = "/non/existing/path";
     test_binary(path, args);
   }
-  catch (IncorrectUsageException e)
+  catch (const IncorrectUsageException &)
   {
     std::cout << "caught an exception" << std::endl;
   }

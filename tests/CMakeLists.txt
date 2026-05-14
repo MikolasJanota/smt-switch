@@ -19,8 +19,9 @@ if(NOT GTest_FOUND)
 endif()
 
 add_library(exec-utils SHARED "${PROJECT_SOURCE_DIR}/tests/exec_utils.cpp")
+smt_switch_enable_warnings(exec-utils)
 target_include_directories(exec-utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(exec-utils PRIVATE GTest::gmock)
+target_link_libraries(exec-utils PRIVATE GTest::gtest)
 
 # add solver-specific test directories
 
@@ -55,12 +56,14 @@ endif()
 # general tests
 
 add_library(available-solvers SHARED "${PROJECT_SOURCE_DIR}/tests/available_solvers.cpp")
+smt_switch_enable_warnings(available-solvers)
 target_include_directories(available-solvers PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(available-solvers PUBLIC smt-switch)
 target_link_libraries(available-solvers PRIVATE ${SOLVER_BACKEND_LIBS})
 
 macro(switch_add_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_link_libraries(${name} available-solvers)
   target_link_libraries(${name} smt-switch)
   target_link_libraries(${name} GTest::gtest_main)
@@ -80,6 +83,7 @@ switch_add_test(test-logging-solver)
 switch_add_test(test-sorting-network)
 switch_add_test(test-str)
 switch_add_test(test-term-translation)
+switch_add_test(test-term-equality)
 switch_add_test(test-time-limit)
 switch_add_test(test-unsat-core)
 switch_add_test(test-unsat-core-reducer)

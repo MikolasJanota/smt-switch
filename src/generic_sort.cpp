@@ -222,6 +222,7 @@ std::string GenericSort::compute_string() const
   else
   {
     assert(false);
+    return "";
   }
 }
 

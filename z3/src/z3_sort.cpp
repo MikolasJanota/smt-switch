@@ -60,12 +60,12 @@ SortVec Z3Sort::get_domain_sorts() const
 {
   if (is_function)
   {
-    int32_t s_arity = z_func.arity();
+    unsigned int s_arity = z_func.arity();
     SortVec sorts;
     sorts.reserve(s_arity);
     Sort s;
 
-    for (size_t i = 0; i < s_arity; i++)
+    for (unsigned int i = 0; i < s_arity; i++)
     {
       s.reset(new Z3Sort(z_func.domain(i), *ctx));
       sorts.push_back(s);

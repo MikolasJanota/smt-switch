@@ -1,5 +1,6 @@
 macro(switch_add_legacy_unit_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/unit/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_link_libraries(${name} available-solvers)
   target_link_libraries(${name} smt-switch)
   add_test(NAME ${name}_test COMMAND ${name})

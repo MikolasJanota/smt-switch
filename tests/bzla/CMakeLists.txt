@@ -1,5 +1,6 @@
 macro(switch_add_bzla_legacy_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/bzla/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_link_libraries(${name} smt-switch-bitwuzla)
   target_link_libraries(${name} exec-utils)
   add_test(NAME ${name} COMMAND ${name})

@@ -9,6 +9,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+function(smt_switch_enable_warnings target)
+  if(MSVC)
+    target_compile_options(${target} PRIVATE /W4)
+  else()
+    target_compile_options(${target} PRIVATE -Wall -Wpedantic)
+  endif()
+endfunction()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # defines find_python_in_virtualenv()
@@ -164,6 +172,7 @@ else()
 endif()
 
 add_library(smt-switch "${SMT_SWITCH_LIB_TYPE}" ${SOURCES})
+smt_switch_enable_warnings(smt-switch)
 target_include_directories(smt-switch PUBLIC ${INCLUDE_DIRS})
 
 set(THREADS_PREFER_PTHREAD_FLAG True)

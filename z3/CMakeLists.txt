@@ -21,6 +21,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/z3_term.cpp"
 )
 
+smt_switch_enable_warnings(smt-switch-z3)
 target_include_directories(smt-switch-z3 PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_include_directories(smt-switch-z3 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(smt-switch-z3 PRIVATE ${GMP_INCLUDE_DIR})

@@ -1,5 +1,6 @@
 macro(switch_add_msat_legacy_test name)
   add_executable(${name} "${PROJECT_SOURCE_DIR}/tests/msat/${name}.cpp")
+  smt_switch_enable_warnings(${name})
   target_include_directories(${name} PRIVATE "${PROJECT_SOURCE_DIR}/msat/include")
   target_include_directories(${name} PRIVATE "${MSAT_HOME}/include")
   target_include_directories(${name} PRIVATE "${GMP_INCLUDE_DIR}")

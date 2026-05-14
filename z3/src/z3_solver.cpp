@@ -390,7 +390,8 @@ Term Z3Solver::get_tester(const Sort & s, std::string name) const
 {
   auto z3sort = std::static_pointer_cast<Z3Sort>(s);
   auto dt = std::static_pointer_cast<Z3Datatype>(z3sort->get_datatype());
-  for (size_t i = 0; i < dt->get_num_constructors(); i++)
+  int num_constructors = dt->get_num_constructors();
+  for (int i = 0; i < num_constructors; i++)
   {
     z3::func_decl cons{
       ctx, Z3_get_datatype_sort_constructor(ctx, dt->datatype, i)
@@ -610,7 +611,7 @@ Result Z3Solver::check_sat_assuming_set(const UnorderedTermSet & assumptions)
 
 void Z3Solver::push(uint64_t num)
 {
-  for (int i = 0; i < num; i++)
+  for (uint64_t i = 0; i < num; i++)
   {
     slv.push();
   }
@@ -832,7 +833,7 @@ Term Z3Solver::make_symbol(const std::string name, const Sort & sort)
     func_decl sort_func = zsort->z_func;
 
     sort_vector domain(ctx);
-    for (int i = 0; i < sort_func.arity(); i++)
+    for (unsigned int i = 0; i < sort_func.arity(); i++)
     {
       domain.push_back(sort_func.domain(i));
     }
@@ -894,26 +895,14 @@ Term Z3Solver::make_term(Op op, const Term & t) const
   }
   else if (op.prim_op == Extract)
   {
-    if (op.idx0 < 0 || op.idx1 < 0)
-    {
-      throw IncorrectUsageException("Can't have negative number in extract");
-    }
     res = Z3_mk_extract(ctx, op.idx0, op.idx1, zterm->term);
   }
   else if (op.prim_op == Zero_Extend)
   {
-    if (op.idx0 < 0)
-    {
-      throw IncorrectUsageException("Can't zero extend by negative number");
-    }
     res = Z3_mk_zero_ext(ctx, op.idx0, zterm->term);
   }
   else if (op.prim_op == Sign_Extend)
   {
-    if (op.idx0 < 0)
-    {
-      throw IncorrectUsageException("Can't sign extend by negative number");
-    }
     res = Z3_mk_sign_ext(ctx, op.idx0, zterm->term);
   }
   else if (op.prim_op == Repeat)
@@ -926,27 +915,14 @@ Term Z3Solver::make_term(Op op, const Term & t) const
   }
   else if (op.prim_op == Rotate_Left)
   {
-    if (op.idx0 < 0)
-    {
-      throw IncorrectUsageException("Can't rotate by negative number");
-    }
     res = Z3_mk_rotate_left(ctx, op.idx0, zterm->term);
   }
   else if (op.prim_op == Rotate_Right)
   {
-    if (op.idx0 < 0)
-    {
-      throw IncorrectUsageException("Can't rotate by negative number");
-    }
     res = Z3_mk_rotate_right(ctx, op.idx0, zterm->term);
   }
   else if (op.prim_op == Int_To_BV)
   {
-    if (op.idx0 < 0)
-    {
-      throw IncorrectUsageException(
-          "Can't have negative width in Int_To_BV op");
-    }
     res = Z3_mk_int2bv(ctx, op.idx0, zterm->term);
   }
   else if (op.prim_op == BV_To_Nat)
@@ -1185,9 +1161,6 @@ Term Z3Solver::make_term(Op op, const TermVec & terms) const
     }
     expr quantified_body = zterms.back();
     zterms.pop_back();
-    unsigned num_var = zterms.size();  // this will always be one when only
-                                       // allowing one parameter
-
     z3::expr quant_res(ctx);
     if (op.prim_op == Forall)
     {
