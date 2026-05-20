@@ -285,12 +285,17 @@ if(BUILD_PYTHON_BINDINGS)
   add_subdirectory(python)
 endif()
 
+add_executable(backend-demo "${PROJECT_SOURCE_DIR}/examples/backend_demo.cpp")
+smt_switch_enable_warnings(backend-demo)
+target_link_libraries(backend-demo PRIVATE ${SOLVER_BACKEND_LIBS} smt-switch)
+
 # should we build the tests
 option(BUILD_TESTS "Should we build the test suite" ON)
 
 if(BUILD_TESTS)
   # build testing infrastructure
   enable_testing()
+  add_test(NAME backend-demo_test COMMAND backend-demo)
 
   # Add tests subdirectory
   # The CMakeLists.txt file there sets up googletest

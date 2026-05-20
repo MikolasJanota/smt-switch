@@ -15,7 +15,12 @@ std::size_t Z3Sort::hash() const
 {
   if (is_function)
   {
-    return z_func.hash();
+    std::size_t seed = z_func.range().hash();
+    for (unsigned int i = 0; i < z_func.arity(); i++)
+    {
+      seed ^= z_func.domain(i).hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
   }
   return type.hash();
 }
@@ -136,12 +141,30 @@ Datatype Z3Sort::get_datatype() const
 bool Z3Sort::compare(const Sort & s) const
 {
   std::shared_ptr<Z3Sort> zs = std::static_pointer_cast<Z3Sort>(s);
-  return hash() == zs->hash();
-  //	if (zs->is_function) {
-  //		cout << "FUNCTOIN" << endl;
-  //		return hash() == (zs->z_func).hash()
-  //	}
-  //	return hash() == (zs->type).hash();
+  if (ctx != zs->ctx || is_function != zs->is_function)
+  {
+    return false;
+  }
+
+  if (is_function)
+  {
+    if (z_func.arity() != zs->z_func.arity()
+        || !Z3_is_eq_sort(*ctx, z_func.range(), zs->z_func.range()))
+    {
+      return false;
+    }
+
+    for (unsigned int i = 0; i < z_func.arity(); i++)
+    {
+      if (!Z3_is_eq_sort(*ctx, z_func.domain(i), zs->z_func.domain(i)))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return Z3_is_eq_sort(*ctx, type, zs->type);
 }
 
 SortKind Z3Sort::get_sort_kind() const

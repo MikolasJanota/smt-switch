@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdint>
 
+#include "datatype.h"
 #include "smt.h"
 #include "z3_factory.h"
 
